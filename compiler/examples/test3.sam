@@ -1,3 +1,4 @@
+rem sum from 1 to 100
 1 if i > 100 goto 5
 2 let sum = sum + i
 3 let i = i + 1

@@ -100,6 +100,8 @@ int main(int argc, char **argv)
             instruction++;
             break;
         case IFGOTO: {
+            printf("IFGOTO:\n");
+            
             struct Token var1;
             struct Token var2;
             struct Token gototoken;
@@ -109,12 +111,11 @@ int main(int argc, char **argv)
             if(var1.type == VARIABLE || var1.type == CONSTANT) {
                 f = findInTable(table, var1);
                 if(f == -1) {
-                    f = addToTable(table, var1, variable);
+                    f = addToTable(table, var1, variable--);
                 }
                 if(var1.type == CONSTANT) {
-                    memory[variable] = atoi(var1.lexem);
+                    memory[table[f].location] = atoi(var1.lexem);
                 }
-                --variable;
             } else {
                 ; /* compilation error */
             }
@@ -125,15 +126,14 @@ int main(int argc, char **argv)
             }
 
             var2 = tokens->tokens[++i];
-            if(var2.type == VARIABLE || var1.type == CONSTANT) {
+            if(var2.type == VARIABLE || var2.type == CONSTANT) {
                 f = findInTable(table, var2);
                 if(f == -1) {
-                    f = addToTable(table, var2, variable);
+                    f = addToTable(table, var2, variable--);
                 }
                 if(var2.type == CONSTANT) {
-                    memory[variable] = atoi(var2.lexem);
+                    memory[table[f].location] = atoi(var2.lexem);
                 }
-                --variable;
             } else {
                 ; /* compilation error */
             }
@@ -158,69 +158,86 @@ int main(int argc, char **argv)
                 f = findInTable(table, var2);
                 memory[instruction++] = 3100 + table[f].location;
                 f = findInTable(table, goconst);
+                memory[instruction] = 4200;
+                memory[instruction + 1] = 4100;
                 if(f == -1) {
-                    flags[instruction] = goconst;
+                    flags[instruction]     = goconst;
+                    flags[instruction + 1] = goconst;
                 } else {
-                    memory[instruction++] = 4200 + table[f].location;
-                    memory[instruction++] = 4100 + table[f].location;
+                    memory[instruction] += table[f].location;
+                    memory[instruction + 1] += table[f].location;
                 }
+                instruction += 2;
             } else if(!strcmp(token.lexem, ">=")) {
                 f = findInTable(table, var2);
                 memory[instruction++] = 2000 + table[f].location;
                 f = findInTable(table, var1);
                 memory[instruction++] = 3100 + table[f].location;
                 f = findInTable(table, goconst);
+                memory[instruction] = 4200;
+                memory[instruction + 1] = 4100;
                 if(f == -1) {
                     flags[instruction] = goconst;
+                    flags[instruction + 1] = goconst;
                 } else {
-                    memory[instruction++] = 4200 + table[f].location;
-                    memory[instruction++] = 4100 + table[f].location;
+                    memory[instruction]     += table[f].location;
+                    memory[instruction + 1] += table[f].location;
                 }
+                instruction += 2;
             } else if(!strcmp(token.lexem, "!=")) {
                 f = findInTable(table, var1);
                 memory[instruction++] = 2000 + table[f].location;
                 f = findInTable(table, var2);
                 memory[instruction++] = 3100 + table[f].location;
                 f = findInTable(table, goconst);
+                memory[instruction++] = 4200 + instruction + 1;
+                memory[instruction] = 4000;
                 if(f == -1) {
                     flags[instruction] = goconst;
                 } else {
-                    memory[instruction++] = 4200 + instruction + 1;
-                    memory[instruction++] = 4000 + table[f].location;
+                    memory[instruction] += table[f].location;
                 }
+                ++instruction;
             } else if(!strcmp(token.lexem, "==")) {
+                printf("               ==                !!!! \n");
                 f = findInTable(table, var1);
                 memory[instruction++] = 2000 + table[f].location;
                 f = findInTable(table, var2);
                 memory[instruction++] = 3100 + table[f].location;
                 f = findInTable(table, goconst);
+                memory[instruction] = 4200;
                 if(f == -1) {
                     flags[instruction] = goconst;
                 } else {
-                    memory[instruction++] = 4200 + table[f].location;
+                    memory[instruction] += table[f].location;
                 }
+                ++instruction;
             } else if(!strcmp(token.lexem, ">")) {
                 f = findInTable(table, var2);
                 memory[instruction++] = 2000 + table[f].location;
                 f = findInTable(table, var1);
                 memory[instruction++] = 3100 + table[f].location;
                 f = findInTable(table, goconst);
+                memory[instruction] = 4100;
                 if(f == -1) {
                     flags[instruction] = goconst;
                 } else {
-                    memory[instruction++] = 4100 + table[f].location;
+                    memory[instruction] += table[f].location;
                 }
+                ++instruction;
             } else if(!strcmp(token.lexem, "<")) {
                 f = findInTable(table, var1);
                 memory[instruction++] = 2000 + table[f].location;
                 f = findInTable(table, var2);
                 memory[instruction++] = 3100 + table[f].location;
                 f = findInTable(table, goconst);
+                memory[instruction] = 4100;
                 if(f == -1) {
                     flags[instruction] = goconst;
                 } else {
-                    memory[instruction++] = 4100 + table[f].location;
+                    memory[instruction] += table[f].location;
                 }
+                ++instruction;
             } /* else {}   never happen */
 
             break;
@@ -438,15 +455,15 @@ int addToTable(struct TableEntry *table, struct Token token, int l)
 int findInTable(struct TableEntry *table, struct Token token)
 {
     printf("findInTable: ");
-    int n = 99;
-    while(n >= 0) {
+    int n = 0;
+    while(n < 100) {
         if(table[n].type == token.type) {
             if(!strcmp(table[n].symbol, token.lexem)) {
                 printf("%d\n", n);
                 return n;
             }
         }
-        --n;
+        ++n;
     }
 
     printf("-1\n");
