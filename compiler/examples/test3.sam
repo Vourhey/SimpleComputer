@@ -1,0 +1,6 @@
+1 if i > 100 goto 5
+2 let sum = sum + i
+3 let i = i + 1
+4 goto 1
+5 print sum
+6 end

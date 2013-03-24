@@ -1,0 +1,5 @@
+1 rem
+2 input a
+3 let a = 2 * a
+4 print a
+5 end

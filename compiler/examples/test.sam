@@ -1,0 +1,7 @@
+1 rem it's test
+2 rem the sum of two integers
+3 input a
+4 input b
+5 let c = a + b
+6 print c
+7 end
